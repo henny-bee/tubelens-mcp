@@ -4,6 +4,8 @@ A self-hosted Model Context Protocol (MCP) server for YouTube video metadata, ti
 
 Runs as a single Docker container over MCP Streamable HTTP (`/mcp`) with SQLite caching and an optional CPU `faster-whisper` (`int8`) fallback when captions are unavailable.
 
+<img width="1661" height="614" alt="image" src="https://github.com/user-attachments/assets/607f2127-b559-4f73-9ec0-ee55406d2bef" />
+
 ## Features
 
 - **Caption-First & Cache-First:** Fetches official manual or auto-generated captions via `youtube-transcript-api` and `yt-dlp`, caching results in SQLite + JSON on `/data`.
