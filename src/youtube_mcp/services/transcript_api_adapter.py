@@ -86,6 +86,13 @@ class TranscriptApiAdapter:
         self._settings = settings
         self._api_factory = api_factory
 
+    @staticmethod
+    def _is_native_track(tr: Any) -> bool:
+        if not bool(getattr(tr, "is_generated", False)):
+            return True
+        url = str(getattr(tr, "_url", ""))
+        return "variant=timing-optimized" not in url and "tlang=" not in url
+
     async def list_tracks(self, video_id: str) -> list[CaptionTrack]:
         def _sync_list() -> list[CaptionTrack]:
             api = self._api_factory()
@@ -93,15 +100,18 @@ class TranscriptApiAdapter:
             tracks: list[CaptionTrack] = []
             for tr in transcript_list:
                 is_gen = bool(getattr(tr, "is_generated", False))
+                is_native = self._is_native_track(tr)
+                if not is_gen:
+                    source = TranscriptSource.MANUAL_CAPTION
+                elif is_native:
+                    source = TranscriptSource.AUTO_CAPTION
+                else:
+                    source = TranscriptSource.TRANSLATED_CAPTION
                 tracks.append(
                     CaptionTrack(
                         language=str(getattr(tr, "language_code", "en")),
                         name=str(getattr(tr, "language", "")),
-                        source=(
-                            TranscriptSource.AUTO_CAPTION
-                            if is_gen
-                            else TranscriptSource.MANUAL_CAPTION
-                        ),
+                        source=source,
                         is_generated=is_gen,
                         is_translatable=bool(getattr(tr, "is_translatable", False)),
                     )
@@ -122,26 +132,56 @@ class TranscriptApiAdapter:
         languages: list[str] | None = None,
         allow_other_language: bool = False,
     ) -> TranscriptRecord:
-        requested_langs = [lang.strip() for lang in (languages or ["id", "en"]) if lang.strip()]
+        requested_langs = [lang.strip() for lang in (languages or ["en", "id"]) if lang.strip()]
         if not requested_langs:
-            requested_langs = ["id", "en"]
+            requested_langs = ["en", "id"]
 
         def _sync_fetch() -> TranscriptRecord:
             api = self._api_factory()
             selected_tr = None
+            is_translated_track = False
             if hasattr(api, "list"):
                 try:
-                    t_list = api.list(video_id)
-                    try:
-                        selected_tr = t_list.find_manually_created_transcript(requested_langs)
-                    except Exception:
-                        try:
-                            selected_tr = t_list.find_generated_transcript(requested_langs)
-                        except Exception:
-                            if allow_other_language:
-                                for candidate in t_list:
-                                    selected_tr = candidate
-                                    break
+                    t_list = list(api.list(video_id))
+                    manual_by_lang = {
+                        str(getattr(t, "language_code", "")): t
+                        for t in t_list
+                        if not bool(getattr(t, "is_generated", False))
+                    }
+                    native_auto_by_lang = {
+                        str(getattr(t, "language_code", "")): t
+                        for t in t_list
+                        if bool(getattr(t, "is_generated", False)) and self._is_native_track(t)
+                    }
+                    translated_by_lang = {
+                        str(getattr(t, "language_code", "")): t
+                        for t in t_list
+                        if bool(getattr(t, "is_generated", False)) and not self._is_native_track(t)
+                    }
+
+                    for lang in requested_langs:
+                        if lang in manual_by_lang:
+                            selected_tr = manual_by_lang[lang]
+                            break
+                    if selected_tr is None:
+                        for lang in requested_langs:
+                            if lang in native_auto_by_lang:
+                                selected_tr = native_auto_by_lang[lang]
+                                break
+                    if selected_tr is None and allow_other_language:
+                        if manual_by_lang:
+                            selected_tr = next(iter(manual_by_lang.values()))
+                        elif native_auto_by_lang:
+                            selected_tr = next(iter(native_auto_by_lang.values()))
+                    if selected_tr is None:
+                        for lang in requested_langs:
+                            if lang in translated_by_lang:
+                                selected_tr = translated_by_lang[lang]
+                                is_translated_track = True
+                                break
+                    if selected_tr is None and allow_other_language and t_list:
+                        selected_tr = t_list[0]
+                        is_translated_track = not self._is_native_track(selected_tr)
                 except Exception as list_exc:
                     cls_n = list_exc.__class__.__name__.lower()
                     if "blocked" in cls_n or "unavailable" in cls_n:
@@ -178,14 +218,17 @@ class TranscriptApiAdapter:
                     details={"video_id": video_id},
                 )
 
+            if not is_gen:
+                source = TranscriptSource.MANUAL_CAPTION
+            elif is_translated_track:
+                source = TranscriptSource.TRANSLATED_CAPTION
+            else:
+                source = TranscriptSource.AUTO_CAPTION
+
             return TranscriptRecord(
                 video_id=video_id,
                 language=lang_code,
-                source=(
-                    TranscriptSource.AUTO_CAPTION
-                    if is_gen
-                    else TranscriptSource.MANUAL_CAPTION
-                ),
+                source=source,
                 is_generated=is_gen,
                 segments=segments,
                 extractor_version="youtube-transcript-api",

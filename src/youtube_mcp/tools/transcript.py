@@ -20,7 +20,7 @@ def register_transcript_tools(
         allow_asr: bool = True,
         allow_other_language: bool = False,
         offset: int = 0,
-        limit: int = 100,
+        limit: int = 500,
     ) -> dict[str, Any]:
         """Retrieve paginated timestamped transcript segments; enqueues Whisper ASR if captions are missing and allow_asr=True."""
 
@@ -28,7 +28,7 @@ def register_transcript_tools(
             resp = await transcript_resolver.get_transcript(
                 url_or_id=url_or_id,
                 principal_id=principal_id,
-                languages=languages or ["id", "en"],
+                languages=languages or ["en", "id"],
                 allow_asr=allow_asr,
                 allow_other_language=allow_other_language,
                 offset=offset,
@@ -57,7 +57,7 @@ def register_transcript_tools(
                 video_id_or_url=video_id,
                 start_sec=start_sec,
                 end_sec=end_sec,
-                languages=languages or ["id", "en"],
+                languages=languages or ["en", "id"],
                 max_chars=max_chars,
             )
             return resp.model_dump()
@@ -82,7 +82,7 @@ def register_transcript_tools(
                 video_id_or_url=video_id,
                 query=query,
                 limit=limit,
-                languages=languages or ["id", "en"],
+                languages=languages or ["en", "id"],
             )
             return resp.model_dump()
 

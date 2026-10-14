@@ -56,9 +56,9 @@ Point your MCP client to `/mcp` using Streamable HTTP and a `Bearer` token heade
 |---|---|---|---|
 | `youtube_get_video_info` | `read` | `url_or_id`, `refresh=false` | Retrieve video metadata (title, channel, duration, views, thumbnail, availability). |
 | `youtube_list_captions` | `read` | `url_or_id` | List available manual and auto-generated caption tracks. |
-| `youtube_get_transcript` | `read` | `url_or_id`, `languages=["id","en"]`, `allow_asr=true`, `allow_other_language=false`, `offset=0`, `limit=100` | Fetch paginated `{start, end, text}` segments, or enqueue an ASR job if captions are unavailable. |
-| `youtube_get_transcript_window` | `read` | `video_id`, `start_sec`, `end_sec`, `max_chars=12000`, `languages=["id","en"]` | Retrieve transcript segments within a `[start_sec, end_sec]` time window. |
-| `youtube_search_transcript` | `read` | `video_id`, `query`, `limit=20`, `languages=["id","en"]` | Search within a video's transcript and return matching segments with timestamps. |
+| `youtube_get_transcript` | `read` | `url_or_id`, `languages=["en","id"]`, `allow_asr=true`, `allow_other_language=false`, `offset=0`, `limit=500` | Fetch paginated `{start, end, text}` segments, or enqueue an ASR job if captions are unavailable. |
+| `youtube_get_transcript_window` | `read` | `video_id`, `start_sec`, `end_sec`, `max_chars=12000`, `languages=["en","id"]` | Retrieve transcript segments within a `[start_sec, end_sec]` time window. |
+| `youtube_search_transcript` | `read` | `video_id`, `query`, `limit=20`, `languages=["en","id"]` | Search within a video's transcript and return matching segments with timestamps. |
 | `youtube_search_videos` | `read` | `query`, `limit=10` | Search YouTube videos by keyword (`limit <= 20`). |
 | `youtube_list_playlist` | `read` | `playlist_url`, `cursor=null`, `limit=20` | List videos in a playlist with cursor pagination (`limit <= 50`). |
 | `youtube_list_channel` | `read` | `channel_url`, `cursor=null`, `limit=20` | List recent uploads from a channel (`@handle`, `UC...`, or URL, `limit <= 50`). |

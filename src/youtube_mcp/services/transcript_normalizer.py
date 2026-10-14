@@ -144,7 +144,7 @@ def paginate_segments(
     segments: list[TranscriptSegment],
     *,
     offset: int = 0,
-    limit: int = 100,
+    limit: int = 500,
     max_chars: int = 12_000,
 ) -> tuple[list[TranscriptSegment], PaginationMeta]:
     safe_offset = max(0, offset)

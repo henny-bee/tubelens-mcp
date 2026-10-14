@@ -83,7 +83,7 @@ class Settings(BaseSettings):
         default=12_000, alias="MAX_MCP_RESPONSE_CHARS", ge=500, le=100_000
     )
     max_segments_per_page: int = Field(
-        default=100, alias="MAX_SEGMENTS_PER_PAGE", ge=1, le=500
+        default=500, alias="MAX_SEGMENTS_PER_PAGE", ge=1, le=500
     )
 
     metadata_cache_ttl_seconds: int = Field(

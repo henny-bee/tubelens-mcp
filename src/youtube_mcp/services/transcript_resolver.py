@@ -124,10 +124,10 @@ class TranscriptResolver:
         allow_asr: bool = True,
         allow_other_language: bool = False,
         offset: int = 0,
-        limit: int = 100,
+        limit: int = 500,
     ) -> TranscriptReadyResponse | TranscriptPendingResponse:
         target = parse_video_id(url_or_id)
-        req_langs = [l.strip() for l in (languages or ["id", "en"]) if l.strip()] or ["id", "en"]
+        req_langs = [l.strip() for l in (languages or ["en", "id"]) if l.strip()] or ["en", "id"]
         safe_limit = max(1, min(limit, self._settings.max_segments_per_page))
         safe_offset = max(0, offset)
 
@@ -231,7 +231,7 @@ class TranscriptResolver:
                 "Invalid time window: require 0 <= start_sec <= end_sec.",
             )
         target = parse_video_id(video_id_or_url)
-        req_langs = [l.strip() for l in (languages or ["id", "en"]) if l.strip()] or ["id", "en"]
+        req_langs = [l.strip() for l in (languages or ["en", "id"]) if l.strip()] or ["en", "id"]
         record, _ = await self.resolve_record(
             video_id=target.video_id,
             canonical_url=target.canonical_url,
@@ -273,7 +273,7 @@ class TranscriptResolver:
                 "Transcript search query must be between 1 and 200 characters.",
             )
         target = parse_video_id(video_id_or_url)
-        req_langs = [l.strip() for l in (languages or ["id", "en"]) if l.strip()] or ["id", "en"]
+        req_langs = [l.strip() for l in (languages or ["en", "id"]) if l.strip()] or ["en", "id"]
         record, _ = await self.resolve_record(
             video_id=target.video_id,
             canonical_url=target.canonical_url,

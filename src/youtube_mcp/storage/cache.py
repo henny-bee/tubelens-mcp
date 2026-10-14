@@ -111,6 +111,13 @@ class CacheRepository:
             return None
 
         if languages:
+            for source_pref in ("youtube_manual_caption", "youtube_auto_caption", "whisper_asr", "youtube_translated_caption"):
+                for lang in languages:
+                    for row in rows:
+                        if row["language"] == lang:
+                            payload = self.get(row["key"])
+                            if payload is not None and payload.get("source") == source_pref:
+                                return payload
             for lang in languages:
                 for row in rows:
                     if row["language"] == lang:
