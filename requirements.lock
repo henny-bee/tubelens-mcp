@@ -1,0 +1,15 @@
+# Pinned production dependencies for reproducible container builds (Python 3.12+)
+mcp==2.2.0
+pydantic==2.12.5
+pydantic-settings==2.15.0
+starlette==1.6.0
+uvicorn==0.52.3
+httpx==0.28.1
+youtube-transcript-api==1.2.4
+yt-dlp[default]==2026.2.4
+faster-whisper==1.1.1
+ctranslate2==4.5.0
+tokenizers==0.23.1
+huggingface_hub==1.28.0
+onnxruntime==1.21.0
+av==14.2.0
